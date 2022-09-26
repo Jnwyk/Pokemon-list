@@ -14,17 +14,6 @@ axios.get('https://pokeapi.co/api/v2/pokemon-species/')
         console.log(err);
     })
 
-// const fetchPokemonInfo = async (url) => {
-//     const pokemonData = await axios.get(url)
-//         .then(data => {
-//             pokemonInfo(data.data);
-//             return data.data
-//         })
-//         .catch(err =>{
-//             console.log(err);
-//         })
-//     return pokemonData;
-// }
 
 const fetchPokemonData = async (url) => {
     const data = await axios.get(url)
@@ -46,8 +35,7 @@ const rightSide = async (pokemon) => {
 }
 
 const addToList = (pokemon) => {
-    const newElem = document.createElement("li");
-    newElem.innerText = pokemon.name;
+    const newElem = createAnElement('li', 'list-element', pokemon.name, true);
     newElem.addEventListener('click', () => rightSide(pokemon));
     return newElem;
 }
@@ -78,7 +66,11 @@ const basicInfoHandler = (pokemonData) => {
     const englishDescription = pokemonInfo.flavor_text_entries.find((element) => element.language.name === 'en');
     const descriptionElement = createAnElement('p', 'pokemon-description', englishDescription.flavor_text, false);
     const typeContainer = createAnElement('div', 'type-container', '', false);
-    const typeElements = pokemonStats.types.map((element) => createAnElement('p', 'pokemon-type', element.type.name));
+    const typeElements = pokemonStats.types.map((element) => {
+        const typeElement = createAnElement('p', 'pokemon-type', element.type.name, true);
+        handleTypeColors(typeElement, element.type.name);
+        return typeElement;
+    });
     const imgElement = createAnElement('img', 'main-picture', '', false);
     imgElement.setAttribute('src', pokemonStats.sprites.front_default);
     imgElement.setAttribute('alt', 'front picture');
@@ -93,22 +85,27 @@ const basicInfoHandler = (pokemonData) => {
 const statsHandler = (pokemonData) => {
     const statContainer = document.getElementById('stats-container');
     const infoStatsContainer = document.getElementById('info-stats-container');
+    const statTitle = createAnElement('h3', 'basic-stats-name', 'Basic stats', false);
 
-    clearContainers([infoStatsContainer]);
+    clearContainers([statContainer, infoStatsContainer]);
 
     const statsElements = pokemonData.stats.map((element) => {
         const nameElement = createAnElement('p', 'stat-name', element.stat.name, true);
         const barElement = createAnElement('div', 'bar', '', true);
+        const barElement2 = createAnElement('div', 'bar2', '', true);
         const baseStatElement = createAnElement('p', 'base-stat', element.base_stat, true);
         const statElement = createAnElement('div', 'one-stat-container', '', true);
+        barElement2.style.width = `${(120 * element.base_stat) / 100}px`;
 
         statElement.appendChild(nameElement);
         statElement.appendChild(barElement);
+        statElement.appendChild(barElement2);
         statElement.appendChild(baseStatElement);
         return statElement;
-    })
+    });
 
     statsElements.forEach((element) => infoStatsContainer.appendChild(element));
+    statContainer.appendChild(statTitle);
     statContainer.appendChild(infoStatsContainer);
 }
 
@@ -116,7 +113,6 @@ const movesHandler = async (pokemonData) => {
     const movesContainer = document.getElementById('moves-container');
 
     clearContainers([movesContainer]);
-    // console.log(pokemonData.moves);
 
     const learnedMoves = pokemonData.moves.filter((element) => {
         if(element.version_group_details[0].level_learned_at > 0)
@@ -126,38 +122,33 @@ const movesHandler = async (pokemonData) => {
     const moveElements = await learnedMoves.map(async (element) => {
         const moveElement = createAnElement('div', 'one-move-container', '', true);
         const moveDetails = await fetchPokemonData(element.move.url);
-        console.log(moveDetails);
 
         const attackLevelContainer = createAnElement('div', 'level-container', '', true);
         const attackLevelHeader = createAnElement('p', 'level-header', 'Level', true);
-        const attackLevel = createAnElement('p', 'level', element.version_group_details.level_learned_at, true);
+        const attackLevel = createAnElement('p', 'level', element.version_group_details[0].level_learned_at, true);
         attackLevelContainer.appendChild(attackLevelHeader);
         attackLevelContainer.appendChild(attackLevel);
 
         const attackNameContainer = createAnElement('div', 'attack-container', '', true);
         const attackName = createAnElement('p', 'attack-name', moveDetails.name, true);
         const attackTypeContainer = createAnElement('div', 'attack-type-container', '', true);
-        const attackType1 = createAnElement('p', 'attack-type', moveDetails.type.name, true);
-        const attackType2 = createAnElement('p', 'attack-type', moveDetails.damage_class.name, true);
+        const attackType1 = createAnElement('p', 'pokemon-type', moveDetails.type.name, true);
+        const attackType2 = createAnElement('p', 'pokemon-type', moveDetails.damage_class.name, true);
         attackTypeContainer.appendChild(attackType1);
         attackTypeContainer.appendChild(attackType2);
+        handleTypeColors(attackType1, moveDetails.type.name);
+        handleTypeColors(attackType2, moveDetails.damage_class.name);
         attackNameContainer.appendChild(attackName);
         attackNameContainer.appendChild(attackTypeContainer);
 
         const attackStatContainer = createAnElement('div', 'attack-stat-container', '', true);
-        const oneStatContainer = [createAnElement('div', 'one-stat-container', '', true), createAnElement('div', 'one-stat-container', '', true), createAnElement('div', 'one-stat-container', '', true)];
-        const attackPpStat = createAnElement('p', 'attack-stat-name', moveDetails.pp, true);
-        const attackPpName = createAnElement('p', 'attack-stat-name', 'pp', true);
-        const attackPowerStat = createAnElement('p', 'attack-stat-name', moveDetails.power, true);
-        const attackPowerName = createAnElement('p', 'attack-stat-name', 'power', true);
-        const attackAccuracyStat = createAnElement('p', 'attack-stat-name', moveDetails.accuracy, true);
-        const attackAccuracyName = createAnElement('p', 'attack-stat-name', 'accuracy', true);
+        const oneStatContainer = [createAnElement('div', 'attack-one-stat-container', '', true), createAnElement('div', 'attack-one-stat-container', '', true), createAnElement('div', 'attack-one-stat-container', '', true)];
+        const attackPpStat = createAnElement('p', 'attack-stat', `${moveDetails.pp ? moveDetails.pp : 0} pp`, true);
+        const attackPowerStat = createAnElement('p', 'attack-stat', `${moveDetails.power ? moveDetails.power : 0} power`, true);
+        const attackAccuracyStat = createAnElement('p', 'attack-stat', `${moveDetails.accuracy ? moveDetails.accuracy : 0} accuracy`, true);
         oneStatContainer[0].appendChild(attackPpStat);
-        oneStatContainer[0].appendChild(attackPpName);
         oneStatContainer[1].appendChild(attackPowerStat);
-        oneStatContainer[1].appendChild(attackPowerName);
         oneStatContainer[2].appendChild(attackAccuracyStat);
-        oneStatContainer[2].appendChild(attackAccuracyName);
         oneStatContainer.forEach((element) => attackStatContainer.appendChild(element));
 
         moveElement.appendChild(attackLevelContainer);
@@ -171,3 +162,40 @@ const movesHandler = async (pokemonData) => {
         movesContainer.appendChild(element);
     }
 }
+
+const handleTypeColors = (element, type) => {
+    switch (type){
+        case 'flying':
+            element.className += " " + 'flying';
+            break;
+        case 'physical':
+            element.className += " " + 'physical';
+            break;
+        case 'normal':
+            element.className += " " + 'normal';
+            break;
+        case 'special':
+            element.className += " " + 'special';
+            break;
+        case 'fire':
+            element.className += " " + 'fire';
+            break;
+        case 'grass':
+            element.className += " " + 'grass';
+            break;
+        case 'poison':
+            element.className += " " + 'poison';
+            break;
+        case 'water':
+            element.className += " " + 'water';
+            break;
+        case 'bug':
+            element.className += " " + 'bug';
+            break;
+        case 'status':
+            element.className += " " + 'status';
+            break;
+        default:
+            break;
+    }
+};
