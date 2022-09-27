@@ -1,5 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap');
 
+@keyframes load {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
 *{
     box-sizing: border-box;
     margin: 0;
@@ -16,10 +21,9 @@ body{
 }
 
 #pokemon-list{
-    margin-top: 2em;
-}
-
-#pokemon-list{
+    position: absolute;
+    left: 20%;
+    margin-top: 2.5em;
     list-style-type: none;
 }
 
@@ -169,6 +173,10 @@ body{
     justify-content: left;
 }
 
+.attack-name{
+    color: rgb(99, 99, 99);
+}
+
 .attack-type-container{
     width: 150px;
     display: flex;
@@ -185,6 +193,25 @@ body{
 .attack-stat{
     margin-right: 0.4em;
     color: rgb(99, 99, 99);
+}
+
+.loader{
+    position: absolute;
+    top: 25%;
+    left: 57%;
+    border-radius: 50%;
+    border: 20px solid rgba(150, 150, 150, 0.3);
+    border-top: 20px solid rgb(255, 126, 66);
+    width: 150px;
+    height: 150px;
+    animation: load 1s linear infinite;
+    
+}
+
+.initial-text{
+    font-size: 3em;
+    font-weight: 600;
+    width: 450px;
 }
 
 

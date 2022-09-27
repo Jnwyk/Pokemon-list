@@ -12,8 +12,7 @@ axios.get('https://pokeapi.co/api/v2/pokemon-species/')
     })
     .catch((err) => {
         console.log(err);
-    })
-
+    });
 
 const fetchPokemonData = async (url) => {
     const data = await axios.get(url)
@@ -26,7 +25,7 @@ const fetchPokemonData = async (url) => {
     return data;
 }
 
-const rightSide = async (pokemon) => {
+const showPokemonContent = async (pokemon) => {
     const pokemonInfo = await fetchPokemonData(pokemon.url)
     const pokemonStats = await fetchPokemonData(`https://pokeapi.co/api/v2/pokemon/${pokemon.name}`)
     basicInfoHandler([pokemonInfo, pokemonStats]);
@@ -34,9 +33,34 @@ const rightSide = async (pokemon) => {
     movesHandler(pokemonStats);
 }
 
+const clickHandler = (element, pokemon) => {
+    const generalContainer = document.getElementById('pokemon-info-container');
+    generalContainer.className = 'initial-text';
+    generalContainer.innerHTML = `Pick a pokemon`;
+    element.addEventListener('click', () => {
+        generalContainer.innerHTML = ``;
+        generalContainer.className = 'loader';
+        setTimeout(() =>{
+            generalContainer.className = '';
+            generalContainer.innerHTML = `
+            <div id="general-info-container">
+                <div id="name-container">
+                    <div id="type-container"></div>
+                </div>
+            <div id="img-disc-container"></div>
+            </div>
+            <div id="stats-container">
+                <div id="info-stats-container"></div>
+            </div>
+            <div id="moves-container"></div>`;
+            showPokemonContent(pokemon);
+        }, 700);
+    });
+}
+
 const addToList = (pokemon) => {
     const newElem = createAnElement('li', 'list-element', pokemon.name, true);
-    newElem.addEventListener('click', () => rightSide(pokemon));
+    clickHandler(newElem, pokemon);
     return newElem;
 }
 
@@ -53,6 +77,43 @@ const createAnElement = (elementName, className, content, isClass) => {
 const clearContainers = (containers) => {
     containers.forEach((element) => element.innerHTML = ``);
 }
+
+const handleTypeColors = (element, type) => {
+    switch (type){
+        case 'flying':
+            element.className += " " + 'flying';
+            break;
+        case 'physical':
+            element.className += " " + 'physical';
+            break;
+        case 'normal':
+            element.className += " " + 'normal';
+            break;
+        case 'special':
+            element.className += " " + 'special';
+            break;
+        case 'fire':
+            element.className += " " + 'fire';
+            break;
+        case 'grass':
+            element.className += " " + 'grass';
+            break;
+        case 'poison':
+            element.className += " " + 'poison';
+            break;
+        case 'water':
+            element.className += " " + 'water';
+            break;
+        case 'bug':
+            element.className += " " + 'bug';
+            break;
+        case 'status':
+            element.className += " " + 'status';
+            break;
+        default:
+            break;
+    }
+};
 
 const basicInfoHandler = (pokemonData) => {
     [pokemonInfo, pokemonStats] = pokemonData;
@@ -160,42 +221,5 @@ const movesHandler = async (pokemonData) => {
     for(let elementPromise of moveElements){
         const element = await elementPromise;
         movesContainer.appendChild(element);
-    }
-}
-
-const handleTypeColors = (element, type) => {
-    switch (type){
-        case 'flying':
-            element.className += " " + 'flying';
-            break;
-        case 'physical':
-            element.className += " " + 'physical';
-            break;
-        case 'normal':
-            element.className += " " + 'normal';
-            break;
-        case 'special':
-            element.className += " " + 'special';
-            break;
-        case 'fire':
-            element.className += " " + 'fire';
-            break;
-        case 'grass':
-            element.className += " " + 'grass';
-            break;
-        case 'poison':
-            element.className += " " + 'poison';
-            break;
-        case 'water':
-            element.className += " " + 'water';
-            break;
-        case 'bug':
-            element.className += " " + 'bug';
-            break;
-        case 'status':
-            element.className += " " + 'status';
-            break;
-        default:
-            break;
     }
 };
