@@ -38,6 +38,8 @@ const clickHandler = (element, pokemon) => {
     generalContainer.className = 'initial-text';
     generalContainer.innerHTML = `Pick a pokemon`;
     element.addEventListener('click', () => {
+        const list = document.getElementById('pokemon-list');
+        list.style.position = 'absolute';
         generalContainer.innerHTML = ``;
         generalContainer.className = 'loader';
         setTimeout(() =>{
@@ -54,7 +56,8 @@ const clickHandler = (element, pokemon) => {
             </div>
             <div id="moves-container"></div>`;
             showPokemonContent(pokemon);
-        }, 700);
+            list.style.position = 'static';
+        }, 1000);
     });
 }
 
@@ -115,6 +118,43 @@ const handleTypeColors = (element, type) => {
     }
 };
 
+const attackLevelHandler = (data) => {
+    const attackLevelContainer = createAnElement('div', 'level-container', '', true);
+    const attackLevelHeader = createAnElement('p', 'level-header', 'Level', true);
+    const attackLevel = createAnElement('p', 'level', data.version_group_details[0].level_learned_at, true);
+    attackLevelContainer.appendChild(attackLevelHeader);
+    attackLevelContainer.appendChild(attackLevel);
+    return attackLevelContainer;
+};
+
+const attackNameHandler = (data) => {
+    const attackNameContainer = createAnElement('div', 'attack-container', '', true);
+    const attackName = createAnElement('p', 'attack-name', data.name, true);
+    const attackTypeContainer = createAnElement('div', 'attack-type-container', '', true);
+    const attackType1 = createAnElement('p', 'pokemon-type', data.type.name, true);
+    const attackType2 = createAnElement('p', 'pokemon-type', data.damage_class.name, true);
+    attackTypeContainer.appendChild(attackType1);
+    attackTypeContainer.appendChild(attackType2);
+    handleTypeColors(attackType1, data.type.name);
+    handleTypeColors(attackType2, data.damage_class.name);
+    attackNameContainer.appendChild(attackName);
+    attackNameContainer.appendChild(attackTypeContainer);
+    return attackNameContainer;
+};
+
+const attackStatHandler = (data) => {
+    const attackStatContainer = createAnElement('div', 'attack-stat-container', '', true);
+    const oneStatContainer = [createAnElement('div', 'attack-one-stat-container', '', true), createAnElement('div', 'attack-one-stat-container', '', true), createAnElement('div', 'attack-one-stat-container', '', true)];
+    const attackPpStat = createAnElement('p', 'attack-stat', `${data.pp ? data.pp : 0} pp`, true);
+    const attackPowerStat = createAnElement('p', 'attack-stat', `${data.power ? data.power : 0} power`, true);
+    const attackAccuracyStat = createAnElement('p', 'attack-stat', `${data.accuracy ? data.accuracy : 0} accuracy`, true);
+    oneStatContainer[0].appendChild(attackPpStat);
+    oneStatContainer[1].appendChild(attackPowerStat);
+    oneStatContainer[2].appendChild(attackAccuracyStat);
+    oneStatContainer.forEach((element) => attackStatContainer.appendChild(element));
+    return attackStatContainer;
+};
+
 const basicInfoHandler = (pokemonData) => {
     [pokemonInfo, pokemonStats] = pokemonData;
     
@@ -156,7 +196,7 @@ const statsHandler = (pokemonData) => {
         const barElement2 = createAnElement('div', 'bar2', '', true);
         const baseStatElement = createAnElement('p', 'base-stat', element.base_stat, true);
         const statElement = createAnElement('div', 'one-stat-container', '', true);
-        barElement2.style.width = `${(120 * element.base_stat) / 100}px`;
+        barElement2.style.width = `${((120 * element.base_stat) / 100) < 120 ? (120 * element.base_stat) / 100 : 120}px`;
 
         statElement.appendChild(nameElement);
         statElement.appendChild(barElement);
@@ -184,33 +224,13 @@ const movesHandler = async (pokemonData) => {
         const moveElement = createAnElement('div', 'one-move-container', '', true);
         const moveDetails = await fetchPokemonData(element.move.url);
 
-        const attackLevelContainer = createAnElement('div', 'level-container', '', true);
-        const attackLevelHeader = createAnElement('p', 'level-header', 'Level', true);
-        const attackLevel = createAnElement('p', 'level', element.version_group_details[0].level_learned_at, true);
-        attackLevelContainer.appendChild(attackLevelHeader);
-        attackLevelContainer.appendChild(attackLevel);
+        const separator = [createAnElement('div', 'separator', '', true), createAnElement('div', 'separator', '', true)];
+        separator[1].className += ' separator-second'
+        separator.forEach((element) => moveElement.appendChild(element));
 
-        const attackNameContainer = createAnElement('div', 'attack-container', '', true);
-        const attackName = createAnElement('p', 'attack-name', moveDetails.name, true);
-        const attackTypeContainer = createAnElement('div', 'attack-type-container', '', true);
-        const attackType1 = createAnElement('p', 'pokemon-type', moveDetails.type.name, true);
-        const attackType2 = createAnElement('p', 'pokemon-type', moveDetails.damage_class.name, true);
-        attackTypeContainer.appendChild(attackType1);
-        attackTypeContainer.appendChild(attackType2);
-        handleTypeColors(attackType1, moveDetails.type.name);
-        handleTypeColors(attackType2, moveDetails.damage_class.name);
-        attackNameContainer.appendChild(attackName);
-        attackNameContainer.appendChild(attackTypeContainer);
-
-        const attackStatContainer = createAnElement('div', 'attack-stat-container', '', true);
-        const oneStatContainer = [createAnElement('div', 'attack-one-stat-container', '', true), createAnElement('div', 'attack-one-stat-container', '', true), createAnElement('div', 'attack-one-stat-container', '', true)];
-        const attackPpStat = createAnElement('p', 'attack-stat', `${moveDetails.pp ? moveDetails.pp : 0} pp`, true);
-        const attackPowerStat = createAnElement('p', 'attack-stat', `${moveDetails.power ? moveDetails.power : 0} power`, true);
-        const attackAccuracyStat = createAnElement('p', 'attack-stat', `${moveDetails.accuracy ? moveDetails.accuracy : 0} accuracy`, true);
-        oneStatContainer[0].appendChild(attackPpStat);
-        oneStatContainer[1].appendChild(attackPowerStat);
-        oneStatContainer[2].appendChild(attackAccuracyStat);
-        oneStatContainer.forEach((element) => attackStatContainer.appendChild(element));
+        const attackLevelContainer = attackLevelHandler(element);
+        const attackNameContainer = attackNameHandler(moveDetails);
+        const attackStatContainer = attackStatHandler(moveDetails);
 
         moveElement.appendChild(attackLevelContainer);
         moveElement.appendChild(attackNameContainer);
